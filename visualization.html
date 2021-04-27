@@ -5,21 +5,6 @@
     <script src="https://d3js.org/d3-hierarchy.v2.min.js"></script>
     <style> /* set the CSS */
 
-      @font-face {
-        font-family: 'vp_pixel';
-        src: url('webfontkit/vp-pixel.simplified-demo-webfont.woff2') format('woff2'),
-          url('webfontkit/vp-pixel.simplified-demo-webfont.woff') format('woff');
-        font-weight: normal;
-        font-style: normal;
-      }
-
-      h1 {
-        font-family: 'vp_pixel', san-serif;
-      }
-
-      label {
-        font-family: 'vp_pixel', san-serif;
-      }
 
       div.tooltip {
         position: absolute;
@@ -32,122 +17,33 @@
         border: 0px;
         border-radius: 8px;
         pointer-events: none;
-        font-family: 'vp_pixel', san-serif;
-      }
-
-      .x-axis {
-        font-family: 'vp_pixel', san-serif;
-      }
-
-      .y-axis {
-        font-family: 'vp_pixel', san-serif;
-      }
-      
-      #visual {
-        display: flex;
-      }
-
-      #filter {
-        margin-left: 60;
-        display: flex;
-        justify-content: space-around;
-        width: 700;
-      }
-
-      #legend {
-        display: flex;
-        align-content: flex-start;
-      }
-
-      #dataRef {
-        font-family: 'vp_pixel', san-serif;
-        position: fixed;
-        right: 5;
-        bottom: 0;
       }
 
     </style>
   </head>
   <body>
-    <h1>Video Games Sales</h1>
-    
-    <div id="visual">
-      <div id="chart">
-        <!-- This is where we will put our chart. -->
+    <h1>Smart Street Bets</h1>
+
+    <div id="all">
+      <div id="left">
+        <div id="chart">
+        </div>
+
+        <div id="calculation">
+        </div>
       </div>
-      <div id="treemap">
-        <!-- This is where we will put our treemap. -->
+
+      <div id="right">
+        <!-- calendar -->
+
+        <!-- time -->
+
+        <div id="articles">
+        </div>
       </div>
+
     </div>
-
-    <div id="legend">
-      <!-- This is where we will put our ber graph's legend. -->
-    </div>
-
-    <div id="filter">
-
-      <div id="platformFilter">
-        <label for="platform"> 
-          Choose a platform:
-        </label>
-
-        <select name="platform" id="platform">
-          <option value="ALL">ALL</option>
-          <option value="3do">3DO</option>
-          <option value="3ds">3DS</option>
-          <option value="2600">2600</option>
-          <option value="dc">DC</option>
-          <option value="ds">DS</option>
-          <option value="gb">GB</option>
-          <option value="gba">GBA</option>
-          <option value="gc">GC</option>
-          <option value="gen">GEN</option>
-          <option value="gg">GG</option>
-          <option value="n64">N64</option>
-          <option value="nes">NES</option>
-          <option value="ng">NG</option>
-          <option value="pc">PC</option>
-          <option value="pcfx">PCFX</option>
-          <option value="ps">PS</option>
-          <option value="ps2">PS2</option>
-          <option value="ps3">PS3</option>
-          <option value="ps4">PS4</option>
-          <option value="psp">PSP</option>
-          <option value="sat">SAT</option>
-          <option value="scd">SCD</option>
-          <option value="tg16">TG16</option>
-          <option value="wii">Wii</option>
-          <option value="ws">WS</option>
-          <option value="x360">X360</option>
-          <option value="xb">XB</option>
-          <option value="xone">XOne</option>
-        </select>
-      </div>
-
-      <div id="genreFilter">
-        <label for="genre"> 
-          Choose a genre:
-        </label>
-
-        <select name="genre" id="genre">
-          <option value="ALL">ALL</option>
-          <option value="action">Action</option>
-          <option value="adventure">Adventure</option>
-          <option value="fighting">Fighting</option>
-          <option value="misc">Misc</option>
-          <option value="platform">Platform</option>
-          <option value="puzzle">Puzzle</option>
-          <option value="racing">Racing</option>
-          <option value="role-playing">Role-Playing</option>
-          <option value="shooter">Shooter</option>
-          <option value="simulation">Simulation</option>
-          <option value="sports">Sports</option>
-          <option value="strategy">Strategy</option>
-        </select>
-      </div>
-    </div>
-
-    <a id="dataRef" href="https://raw.githubusercontent.com/6859-sp21/a4-videogamessales/main/vgsalesglobale.csv">Data Reference</a>
+  
 
     <script>
       // 1. Download data
