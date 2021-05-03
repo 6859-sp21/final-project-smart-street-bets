@@ -252,7 +252,7 @@
               tooltip.transition()
                 .duration(200)
                 .style("opacity", .9);
-              tooltip.html("Date: " + d.date + "<br/> Open: " + d.open + "<br/> Close: " + d.close + "<br/> Low: " + 
+              tooltip.html("Date: " + d.date.toString().slice(0,15) + "<br/> Open: " + d.open + "<br/> Close: " + d.close + "<br/> Low: " + 
                             d.low + "<br/> High: " + d.high)
                 .style("left", (event.pageX) + "px")
                 .style("background", "beige")
