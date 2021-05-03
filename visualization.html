@@ -79,6 +79,20 @@
         color: black;
       }
 
+      div.tooltip {
+        position: absolute;
+        text-align: left;
+        width: auto;
+        height: auto;
+        padding: 5px;
+        font: 12px sans-serif;
+        /* background: lightsteelblue; */
+        border: 0px;
+        border-radius: 8px;
+        pointer-events: none;
+        font-family: 'vp_pixel', san-serif;
+      }
+
     </style>
   </head>
   <body>
@@ -151,6 +165,10 @@
         let formatValue = d3.format(".2f");
         let formatDate = d3.utcFormat("%B %-d, %Y");
 
+        let tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
         d3.csv("https://raw.githubusercontent.com/6859-sp21/final-project-smart-street-bets/main/BTC-USD.csv")
         .then(data => {
           // Last 120 days of dataset 
@@ -216,6 +234,7 @@
               // Have to parse the date
               // Problem with x
               .attr("transform", d => `translate(${x(d.date)},0)`);
+            
 
           // Getting undefined
           g.append("line")
@@ -228,7 +247,28 @@
             .attr("stroke-width", x.bandwidth())
             .attr("stroke", d => d.open > d.close ? d3.schemeSet1[0]
               : d.close > d.open ? d3.schemeSet1[2]
-              : d3.schemeSet1[8]);
+              : d3.schemeSet1[8])
+            .on("mouseover", function(event, d) {
+              tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+              tooltip.html("Date: " + d.date + "<br/> Open: " + d.open + "<br/> Close: " + d.close + "<br/> Low: " + 
+                            d.low + "<br/> High: " + d.high)
+                .style("left", (event.pageX) + "px")
+                .style("background", "beige")
+                .style("top", (event.pageY - 28) + "px");
+
+              d3.select(this)
+                .attr("opacity", .5)
+            })
+            .on("mouseout", function(event, d) {
+              tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+
+              d3.select(this)
+                .attr("opacity", 1)
+            })
 
           g.append("title")
               .text(d => `${formatDate(d.date)}
