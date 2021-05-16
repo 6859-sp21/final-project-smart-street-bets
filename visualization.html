@@ -105,6 +105,10 @@
         font-family: 'vp_pixel', san-serif;
       }
 
+      #page-number {
+        font-size: 12px;
+      }
+
     </style>
   </head>
   <body>
@@ -156,8 +160,9 @@
             </div>
           </a>
           <div class="bottom">
-            <img class="arrow" src="left_arrow.png" onclick="prevPage()">
-            <img class="arrow" src="right_arrow.png" onclick="nextPage()">
+            <img class="arrow" id="left-arrow" src="left_arrow.png" onclick="prevPage()">
+            <p id="page-number"></p>
+            <img class="arrow" id="right-arrow" src="right_arrow.png" onclick="nextPage()">
           </div>
         </div>
       </div>
@@ -352,6 +357,21 @@
 
             sectionImage.appendChild(imgTag);
           }
+
+          if ((page+1)*4 >= articlesSmall.length) {
+            blockButton("right");
+          } else {
+            unblockButton("right");
+          }
+
+          if (page === 0) {
+            blockButton("left");
+          } else {
+            unblockButton("left");
+          }
+
+          let pageNum = document.querySelector("#page-number");
+          pageNum.innerHTML = (page+1) + "/" + Math.ceil(articlesSmall.length / 4);
         }
       }
 
@@ -382,6 +402,21 @@
           sectionText.appendChild(titleTag);
           sectionText.appendChild(infoTag);
         }
+
+        if ((page+1)*4 >= redditSmall.length) {
+          blockButton("right");
+        } else {
+          unblockButton("right");
+        }
+
+        if (page === 0) {
+          blockButton("left");
+        } else {
+          unblockButton("left");
+        }
+
+        let pageNum = document.querySelector("#page-number");
+        pageNum.innerHTML = (page+1) + "/" + Math.ceil(redditSmall.length / 4);
       }
 
       function truncateTitle(title) {
@@ -402,6 +437,9 @@
           sectionText.querySelectorAll('*').forEach(n => n.remove());
           sectionImage.querySelectorAll('*').forEach(n => n.remove());
         }
+
+        let pageNum = document.querySelector("#page-number");
+        pageNum.innerHTML = "";
       }
 
       let mode = 0 // 0: articles 1: posts
@@ -414,6 +452,7 @@
         page = 0;
         deleteArticles();
         let title = document.querySelector('#title');
+
         if (mode === 0) {
           mode = 1;
           title.innerHTML = "Reddit"
@@ -442,6 +481,35 @@
           reloadArticles(articlesSmall.slice(4*page, 4*(page+1)));
         } else {
           reloadReddit(redditSmall.slice(4*page, 4*(page+1)));
+        }
+      }
+
+      function blockButton(flag) {
+
+        if (flag === "right") {
+          let right = document.querySelector("#right-arrow");
+          right.onclick = null;
+          right.style.opacity = 0.4;
+        }
+
+        if (flag === "left") {
+          let left = document.querySelector("#left-arrow");
+          left.onclick = null;
+          left.style.opacity = 0.4;
+        }
+      }
+
+      function unblockButton(flag) {
+        if (flag === "right") {
+          let right = document.querySelector("#right-arrow");
+          right.onclick = nextPage;
+          right.style.opacity = 1;
+        }
+
+        if (flag === "left") {
+          let left = document.querySelector("#left-arrow");
+          left.onclick = prevPage;
+          left.style.opacity = 1;
         }
       }
 
