@@ -48,12 +48,20 @@
         height: 45px;
         border-top: 2px solid white;
         border-radius: 0% 0% 0% 0%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
 
       #switch {
         width: 15px;
         height: 15px;
-        opacity: 0.6;
+      }
+
+      .arrow {
+        width: 20px;
+        height: 20px;
+        margin: 0px 15px 0px 15px;
       }
 
       div.switch-button {
@@ -65,6 +73,8 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        margin-right: 10px;
+        margin-top: 3px;
       }
 
       a.section {
@@ -114,9 +124,9 @@
 
         <div class="articles article-backgraound article-width">
           <div class="top">
-            <h2 class="title">Articles</h2>
+            <h2 class="title" id="title">Articles</h2>
             <div class="switch-button">
-              <img id="switch" src="switch.png">
+              <img id="switch" src="switch.png" onclick="toggleMode()">
             </div>
           </div>
           <a class="section" id="article-0">
@@ -143,12 +153,16 @@
             <div class="article-img" id="article-3-img"> 
             </div>
           </a>
-          <div class="bottom"></div>
+          <div class="bottom">
+            <img class="arrow" src="left_arrow.png">
+            <img class="arrow" src="right_arrow.png">
+          </div>
         </div>
       </div>
 
     </div>
     <script type="text/javascript" src="articles.json"></script>
+    <script type="text/javascript" src="posts.json"></script>
     <script>
 
         const height = 300;
@@ -280,43 +294,127 @@
               document.getElementById("chart").appendChild(svg.node());
         })
             
-      const imgSize = {width: 40, height: 40}
+      const imgSize = {width: 50, height: 50};
+
+      const monthList = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+
+      function pad(num, size) {
+        num = num.toString();
+        while (num.length < size) {
+          num = "0" + num;
+        }
+        return num;
+      }
+
+      function formatDateString(dateString) {
+        let date = new Date(dateString);
+
+        let year = date.getFullYear();
+        let month = monthList[date.getMonth()];
+        let dateNo = date.getDate();
+        let hour = date.getHours();
+        let minute = date.getMinutes();
+
+        return hour + ':' + pad(minute, 2) + ' ' + dateNo + ' ' + month + ' ' + year
+      }
 
       function reloadArticles(articles) {
         for (let i = 0; i < 4; i++) {
-          id = "#article-" + i;
-          section = document.querySelector(id);
-          section.href = articles[i][1][0].href;
+          let id = "#article-" + i;
+          let section = document.querySelector(id);
+          section.href = articles[i].href;
 
-          textId = "#article-" + i + "-text";
-          imgId = "#article-" + i + "-img";
-          console.log(textId);
-          sectionText = document.querySelector(textId);
+          let textId = "#article-" + i + "-text";
+          let imgId = "#article-" + i + "-img";
+          let sectionText = document.querySelector(textId);
 
-          titleTag = document.createElement("p");
-          title = document.createTextNode(articles[i][1][0].title);
+          let titleTag = document.createElement("p");
+          let title = document.createTextNode(articles[i].title);
           titleTag.appendChild(title);
 
-          infoTag = document.createElement("p");
-          info = document.createTextNode(articles[i][1][0].source);
+          let infoTag = document.createElement("p");
+          let info = document.createTextNode(articles[i].source + ' | ' + formatDateString(articles[i].date));
           infoTag.appendChild(info);
 
           sectionText.appendChild(titleTag);
           sectionText.appendChild(infoTag);
 
-          sectionImage = document.querySelector(imgId);
+          if ('img' in articles[i]) {
+            let sectionImage = document.querySelector(imgId);
 
-          imgTag = document.createElement("img");
-          imgTag.src = articles[i][1][0].img;
-          imgTag.height = imgSize.height;
-          imgTag.width = imgSize.width;
+            let imgTag = document.createElement("img");
+            imgTag.src = articles[i].img;
+            imgTag.height = imgSize.height;
+            imgTag.width = imgSize.width;
 
-          sectionImage.appendChild(imgTag);
+            sectionImage.appendChild(imgTag);
+          }
         }
       }
 
-      articles4 = Object.entries(articles).slice(0,4);
-      reloadArticles(articles4)
+      function reloadReddit(posts) {
+        for (let i = 0; i < 4; i++) {
+          let id = "#article-" + i;
+          let section = document.querySelector(id);
+          section.href = posts[i].href;
+
+          let textId = "#article-" + i + "-text";
+          
+          let sectionText = document.querySelector(textId);
+
+          let titleTag = document.createElement("p");
+          let title = document.createTextNode(posts[i].title);
+          titleTag.appendChild(title);
+
+          let infoTag = document.createElement("p");
+          let info;
+          if ('subreddit' in posts[i]) {
+            info = document.createTextNode(posts[i].subreddit + ' | ' + formatDateString(posts[i].date));
+          } else {
+            info = document.createTextNode(formatDateString(posts[i].date));
+          }
+          infoTag.appendChild(info);
+
+          sectionText.appendChild(titleTag);
+          sectionText.appendChild(infoTag);
+        }
+      }
+
+      function deleteArticles() {
+        for (let i = 0; i < 4; i++) {
+          let textId = "#article-" + i + "-text";
+          let imgId = "#article-" + i + "-img";
+
+          let sectionText = document.querySelector(textId);
+          let sectionImage = document.querySelector(imgId);
+
+          sectionText.querySelectorAll('*').forEach(n => n.remove());
+          sectionImage.querySelectorAll('*').forEach(n => n.remove());
+        }
+      }
+
+      let mode = 0 // 0: articles 1: posts
+      articlesSmall = articles['2021-01-01']
+      redditSmall = posts['2021-01-01']
+      console.log(articlesSmall.length)
+      console.log(redditSmall.length)
+      reloadArticles(articlesSmall)
+
+      function toggleMode() {
+        if (mode === 0) {
+          mode = 1;
+          let title = document.querySelector('#title');
+          title.innerHTML = "Reddit"
+          deleteArticles();
+          reloadReddit(redditSmall);
+        } else {
+          mode = 0;
+          let title = document.querySelector('#title');
+          title.innerHTML = "Articles"
+          deleteArticles();
+          reloadArticles(articlesSmall);
+        }
+      }
 
       // 1. Download data
       d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-videogamessales/main/vgsalesglobale.csv")
