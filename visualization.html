@@ -56,6 +56,7 @@
       #switch {
         width: 15px;
         height: 15px;
+        cursor: pointer;
       }
 
       .arrow {
@@ -75,6 +76,7 @@
         justify-content: space-between;
         margin-right: 10px;
         margin-top: 3px;
+        margin-bottom: 3px;
       }
 
       a.section {
@@ -154,8 +156,8 @@
             </div>
           </a>
           <div class="bottom">
-            <img class="arrow" src="left_arrow.png">
-            <img class="arrow" src="right_arrow.png">
+            <img class="arrow" src="left_arrow.png" onclick="prevPage()">
+            <img class="arrow" src="right_arrow.png" onclick="nextPage()">
           </div>
         </div>
       </div>
@@ -319,7 +321,8 @@
       }
 
       function reloadArticles(articles) {
-        for (let i = 0; i < 4; i++) {
+        let length = Math.min(4, articles.length);
+        for (let i = 0; i < length; i++) {
           let id = "#article-" + i;
           let section = document.querySelector(id);
           section.href = articles[i].href;
@@ -353,7 +356,8 @@
       }
 
       function reloadReddit(posts) {
-        for (let i = 0; i < 4; i++) {
+        let length = Math.min(4, posts.length);
+        for (let i = 0; i < length; i++) {
           let id = "#article-" + i;
           let section = document.querySelector(id);
           section.href = posts[i].href;
@@ -363,7 +367,7 @@
           let sectionText = document.querySelector(textId);
 
           let titleTag = document.createElement("p");
-          let title = document.createTextNode(posts[i].title);
+          let title = document.createTextNode(truncateTitle(posts[i].title));
           titleTag.appendChild(title);
 
           let infoTag = document.createElement("p");
@@ -380,6 +384,13 @@
         }
       }
 
+      function truncateTitle(title) {
+        if (title.length > 90) {
+          return title.slice(0, 90) + '...'; 
+        }
+        return title
+      }
+
       function deleteArticles() {
         for (let i = 0; i < 4; i++) {
           let textId = "#article-" + i + "-text";
@@ -394,25 +405,43 @@
       }
 
       let mode = 0 // 0: articles 1: posts
-      articlesSmall = articles['2021-01-01']
-      redditSmall = posts['2021-01-01']
-      console.log(articlesSmall.length)
-      console.log(redditSmall.length)
+      var articlesSmall = articles['2021-01-01']
+      var redditSmall = posts['2021-01-01']
+      let page = 0;
       reloadArticles(articlesSmall)
 
       function toggleMode() {
+        page = 0;
+        deleteArticles();
+        let title = document.querySelector('#title');
         if (mode === 0) {
           mode = 1;
-          let title = document.querySelector('#title');
           title.innerHTML = "Reddit"
-          deleteArticles();
           reloadReddit(redditSmall);
         } else {
           mode = 0;
-          let title = document.querySelector('#title');
           title.innerHTML = "Articles"
-          deleteArticles();
           reloadArticles(articlesSmall);
+        }
+      }
+
+      function nextPage() {
+        deleteArticles();
+        page++;
+        if (mode === 0) {
+          reloadArticles(articlesSmall.slice(4*page, 4*(page+1)));
+        } else {
+          reloadReddit(redditSmall.slice(4*page, 4*(page+1)));
+        }
+      }
+
+      function prevPage() {
+        deleteArticles();
+        page--;
+        if (mode === 0) {
+          reloadArticles(articlesSmall.slice(4*page, 4*(page+1)));
+        } else {
+          reloadReddit(redditSmall.slice(4*page, 4*(page+1)));
         }
       }
 
