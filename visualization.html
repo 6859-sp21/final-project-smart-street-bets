@@ -91,22 +91,19 @@
         color: black;
       }
 
-      div.tooltip {
-        position: absolute;
-        text-align: left;
-        width: auto;
-        height: auto;
-        padding: 5px;
-        font: 12px sans-serif;
-        /* background: lightsteelblue; */
-        border: 0px;
-        border-radius: 8px;
-        pointer-events: none;
-        font-family: 'vp_pixel', san-serif;
-      }
-
       #page-number {
         font-size: 12px;
+      }
+
+      #right {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+      }
+
+      #calendar-bunch {
+        margin-top: 10px;
       }
 
     </style>
@@ -125,8 +122,13 @@
 
       <div id="right">
         <!-- calendar -->
-
-        <!-- time -->
+        <div id="calendar-section">
+          <label for="calendar"> Please select date and time: </label>
+          <div id="calendar-bunch">
+            <input type="datetime-local" id="calendar" name="calendar">
+            <input type="submit" onclick="submitDateTime()">
+          </div>
+        </div>
 
         <div class="articles article-backgraound article-width">
           <div class="top">
@@ -165,6 +167,7 @@
             <img class="arrow" id="right-arrow" src="right_arrow.png" onclick="nextPage()">
           </div>
         </div>
+
       </div>
 
     </div>
@@ -443,10 +446,9 @@
       }
 
       let mode = 0 // 0: articles 1: posts
-      var articlesSmall = articles['2021-01-01']
-      var redditSmall = posts['2021-01-01']
+      var articlesSmall = []; // This will be displayed.
+      var redditSmall = []; // This will be displayed.
       let page = 0;
-      reloadArticles(articlesSmall)
 
       function toggleMode() {
         page = 0;
@@ -510,6 +512,45 @@
           let left = document.querySelector("#left-arrow");
           left.onclick = prevPage;
           left.style.opacity = 1;
+        }
+      }
+
+      function submitDateTime() {
+        deleteArticles();
+        filterArticles();
+      }
+
+      function getDateString(date) {
+        let year = date.getFullYear();
+        let mm = pad(date.getMonth()+1, 2);
+        let dd = pad(date.getDate(), 2);
+        return year + '-' + mm + '-' + dd;
+      }
+
+      function filterArticles() {
+        let dateString = document.querySelector("#calendar").value;
+        let today = new Date(dateString);
+        let todayString = dateString.slice(0,10);
+
+        let yesterday = new Date(today.getTime())
+        yesterday.setDate(today.getDate() - 1);
+       
+        let yesterdayString = getDateString(yesterday);
+        
+        articles1 = articles[yesterdayString];
+        articles2 = articles[todayString].filter(d => d.date < today);
+        articlesSmall = articles1.concat(articles2);
+        
+        reddit1 = posts[yesterdayString];
+        reddit2 = posts[todayString].filter(d => d.date < today);
+        redditSmall = reddit1.concat(reddit2);
+        
+        page =0;
+        
+        if (mode === 0) {
+          reloadArticles(articlesSmall);
+        } else {
+          reloadReddit(redditSmall);
         }
       }
 
