@@ -474,7 +474,7 @@
             var xtickdelta   = Math.ceil(60/(width/genData.length))
             xAxis.tickValues(x.domain().filter(function(d, i) { return !((i+Math.floor(xtickdelta/2)) % xtickdelta); }));
 
-            var barwidth    = width;
+            var barwidth    = x.bandwidth();
             var candlewidth = Math.floor(d3.min([barwidth*0.8, 13])/2)*2+1;
             var delta       = Math.round((barwidth-candlewidth)/2);
 
@@ -493,13 +493,13 @@
 
             svg.append("g")
                 .attr("class", "axis yaxis")
-                .attr("transform", "translate(" + width + ",0)")
+                .attr("transform", "translate(" + 0 + ",0)")
                 .call(d3.axisLeft(y));
                 //.call(yAxis.orient("right").tickSize(0));
 
             svg.append("g")
                 .attr("class", "axis grid")
-                .attr("transform", "translate(" + width + ",0)")
+                .attr("transform", "translate(" + 0 + ",0)")
                 .call(d3.axisLeft(y));
                 //.call(yAxis.orient("left").tickFormat("").tickSize(width).outerTickSize(0));
 
