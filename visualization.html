@@ -119,7 +119,7 @@
       #chart .sticks .fall, #chart .candles .fall { fill: red; }
       #chart .sticks .hoved { stroke: white; }
       #chart .candles .hoved { stroke: white; }
-      #chart .candles rect { pointer-events: none; shape-rendering: crispEdges; }
+      #chart .candles rect {  shape-rendering: crispEdges; }
 
       #chart .bbmn { fill: none; stroke: cyan; stroke-width: 1.5px; pointer-events: none; }
       #chart .bbup { fill: none; stroke: green; stroke-width: 1.5px; pointer-events: none; }
@@ -240,9 +240,6 @@
         // let formatValue = d3.format(".2f");
         // let formatDate = d3.utcFormat("%B %-d, %Y");
 
-        // let tooltip = d3.select("body").append("div")
-        // .attr("class", "tooltip")
-        // .style("opacity", 0);
 
         // d3.csv("https://raw.githubusercontent.com/6859-sp21/final-project-smart-street-bets/main/BTC-USD.csv")
         // .then(data => {
@@ -438,7 +435,6 @@
 
       //   return barrender;
       // } // barchart
-
       // cschart 
       function cschart() {
 
@@ -447,6 +443,10 @@
 
         function csrender(selection) {
           selection.each(function() {
+
+            var tooltip = d3.select("body").append("div")
+              .attr("class", "tooltip")
+              .style("opacity", 0);
         
             var interval = TIntervals[TPeriod];
 
@@ -548,9 +548,27 @@
                 .attr("height", function(d) { return y(d3.min([d.Open, d.Close])) - y(d3.max([d.Open, d.Close])); })
                 .attr("width", candlewidth)
                 .classed("rise", function(d) { return (d.Close>d.Open); })
-                .classed("fall", function(d) { return (d.Open>d.Close); });
+                .classed("fall", function(d) { return (d.Open>d.Close); })
+                .on("mouseover", function(event, d) {
+                  tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                  tooltip.html("Date: " + formatDateTime(d.Timestamp) + "<br/> Open: " + d.Open + "<br/> Close: " + d.Close + "<br/> Low: " + 
+                            d.Low + "<br/> High: " + d.High)
+                    .style("left", (event.pageX) + "px")
+                    .style("background", "beige")
+                    .style("top", (event.pageY - 28) + "px");
 
-          });
+                  d3.select(this)
+                    .attr("opacity", .5)})
+                .on("mouseout", function(event, d) {
+                  tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+
+                  d3.select(this)
+                    .attr("opacity", 1)})
+            });
         } // csrender
 
         csrender.Bheight = function(value) {
@@ -709,6 +727,16 @@
       function formatDateString(dateString) {
         let date = new Date(dateString);
 
+        let year = date.getFullYear();
+        let month = monthList[date.getMonth()];
+        let dateNo = date.getDate();
+        let hour = date.getHours();
+        let minute = date.getMinutes();
+
+        return hour + ':' + pad(minute, 2) + ' ' + dateNo + ' ' + month + ' ' + year
+      }
+
+      function formatDateTime(date) {
         let year = date.getFullYear();
         let month = monthList[date.getMonth()];
         let dateNo = date.getDate();
