@@ -597,27 +597,70 @@
         return d;
       }
 
-      // interval has to be changed to I think hour 
+      // Just 1 interval in our case
       function timeCompare(date, interval) {
-        if (interval == "week")       { var durfn = d3.time.monday(date); }
-        else if (interval == "month") { var durfn = d3.time.month(date); }
-        else { var durfn = d3.time.day(date); } 
+        if (interval == "day")      { var durfn = d3.timeDay(date); } // Returns day interval the date is in
+        console.log(durfn);
+        // if (interval == "week")       { var durfn = d3.time.monday(date); }
+        // else if (interval == "month") { var durfn = d3.time.month(date); }
+        // else { var durfn = d3.time.day(date); } 
         return durfn;
       }
 
       function dataCompress(data, interval) {
-        var compressedData  = d3.nest()
-                      .key(function(d) { return timeCompare(d.Timestamp, interval); })
-                      .rollup(function(v) { return {
-                              Timestamp:   timeCompare(d3.values(v).pop().Timestamp, interval),
-                              Open:        d3.values(v).shift().Open,
-                              Low:         d3.min(v, function(d) { return d.Low;  }),
-                              High:        d3.max(v, function(d) { return d.High; }),
-                              Close:       d3.values(v).pop().Close,
-                              // TURNOVER:    d3.mean(v, function(d) { return d.TURNOVER; }),
-                              // VOLATILITY:  d3.mean(v, function(d) { return d.VOLATILITY; })
-                              }; })
-                      .entries(data).map(function(d) { return d.values; });
+        // var compressedData  = d3.nest()
+        //               .key(function(d) { return timeCompare(d.Timestamp, interval); })
+        //               .rollup(function(v) { return {
+        //                       Timestamp:   timeCompare(d3.values(v).pop().Timestamp, interval),
+        //                       Open:        d3.values(v).shift().Open,
+        //                       Low:         d3.min(v, function(d) { return d.Low;  }),
+        //                       High:        d3.max(v, function(d) { return d.High; }),
+        //                       Close:       d3.values(v).pop().Close,
+        //                       // TURNOVER:    d3.mean(v, function(d) { return d.TURNOVER; }),
+        //                       // VOLATILITY:  d3.mean(v, function(d) { return d.VOLATILITY; })
+        //                       }; })
+        //               .entries(data).map(function(d) { return d.values; });
+
+        // var compressedData  = d3.nest() // Key : Values; In this case, key is the interval, and values are points that are all within that interval
+        //               .key(function(d) { return timeCompare(d.Timestamp, interval); })
+        //               .rollup(function(v) { return {
+        //                       Timestamp:   timeCompare(d3.values(v).pop().Timestamp, interval), // Last item, pop
+        //                       Open:        d3.values(v).shift().Open, // First item
+        //                       Low:         d3.min(v, function(d) { return d.Low;  }),
+        //                       High:        d3.max(v, function(d) { return d.High; }),
+        //                       Close:       d3.values(v).pop().Close, // Last item is the close 
+        //                       // TURNOVER:    d3.mean(v, function(d) { return d.TURNOVER; }),
+        //                       // VOLATILITY:  d3.mean(v, function(d) { return d.VOLATILITY; })
+        //                       }; })
+        //               .entries(data).map(function(d) { return d.values; });
+
+        // Only 1 interval being used (Because of 60 datapoint limit!!)
+        // Keys will be dates in Unix
+        // Day in UNIX -> Array pairs 
+        var dataByDay = d3.group(data, d => new Date(d.Timestamp.getMonth() + 1 + "-" + d.Timestamp.getDate() + "-" + d.Timestamp.getFullYear()).getTime() / 1000);
+        var compressedData = [];
+
+        dataByDay.forEach((v, k, m) => { 
+          // k is the UNIX value
+          // v is the array associated with k
+          curr_datapoint = {High: -1.7976931348623157E+10308, Low: 1.7976931348623157E+10308};
+          for (let i = 0; i < v.length; i++) {
+            if (i == 0) {
+              curr_datapoint.Timestamp = v[i].Timestamp;
+              curr_datapoint.Open = v[i].Open;
+
+            }
+            else if (i == v.length -1) {
+              curr_datapoint.Close = v[i].Close;
+            }
+            curr_datapoint.High = Math.max(curr_datapoint.High, v[i].High);
+            curr_datapoint.Low = Math.min(curr_datapoint.Low, v[i].Low);
+          }
+          compressedData.push(curr_datapoint);
+        
+        });
+
+        console.log(compressedData);
 
         return compressedData;
       }
@@ -628,7 +671,7 @@
       // parseDate will likely have to be different
       // Not sure how to format minutes
       var TPeriod      = "1D";
-      var TDays        = {"1D":48, "3M":60};
+      var TDays        = {"1D":48, "3M":5760}; // Going to try 5760 instead of 60 and see if it works
       var TIntervals   = {"1D":"minute", "3M":"day",};
       var TFormat      = {"minute":"%I:%M %p", "day":"%d %b '%y", "week":"%d %b '%y", "month":"%b '%y" };
       var genRaw, genData;
@@ -638,7 +681,7 @@
       (function() {
          d3.csv("https://raw.githubusercontent.com/6859-sp21/final-project-smart-street-bets/f1b9d3e3bdca09f96f9c3590cf5a70ff8f3849bb/bitstampUSB_15-min_data_2012-01-01_to_2021-03-31.csv", genType)
           .then(data => {
-            console.log(data);
+            // console.log(data);
             genRaw = data;
             mainjs();
           })
