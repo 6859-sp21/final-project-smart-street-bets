@@ -1,6 +1,7 @@
 # final-project-starter-code
 
 ## Project title
+Smart Street Bets
 
 ## Team member
 * Eric Hong
@@ -30,7 +31,7 @@ Please use Google Chrome to access the website: <https://6859-sp21.github.io/fin
 
 ## Instructions
 
-* Select the date on the calendar. After that you will see the data on the graph, and articles about bitcoin on that day and the day before.
+* Select the date and time on the calendar. After that you will see the data on the graph, and articles about bitcoin on that day and the day before.
 
 * You could hover your mouse over a candlestick, and you will see the date and prices (open, close, low, high) of that data point.
 
