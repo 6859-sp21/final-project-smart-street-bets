@@ -474,7 +474,7 @@
             var xtickdelta   = Math.ceil(60/(width/genData.length))
             xAxis.tickValues(x.domain().filter(function(d, i) { return !((i+Math.floor(xtickdelta/2)) % xtickdelta); }));
 
-            var barwidth    = x.range();
+            var barwidth    = width;
             var candlewidth = Math.floor(d3.min([barwidth*0.8, 13])/2)*2+1;
             var delta       = Math.round((barwidth-candlewidth)/2);
 
