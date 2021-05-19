@@ -472,6 +472,7 @@
 
           let idx = Math.floor( (UNIXtime - firstTimeStamp) / (lastTimeStamp - firstTimeStamp) * data.length );
 
+          console.log(idx);
           return data.slice(idx -TDays[TPeriod], idx);
 
           // The meat of the work
@@ -775,14 +776,14 @@
         globalTime = new Date(document.querySelector("#calendar").value);
 
         // Get rid of any current chart intervals 
-        if (currChart != undefined) {
-          clearinterval(currChartInterval)
+        if (currChartInterval != undefined) {
+          clearInterval(currChartInterval)
         }
         // Update chart using new globalTime
         updateChart();
 
         // Set interval for updating chart every 15 minutes, if not submitted 
-        currChart = setInterval(updateChart, 900000);
+        currChartInterval = setInterval(updateChart, 900000);
 
         displayDateTime();
       }
