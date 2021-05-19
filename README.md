@@ -30,7 +30,15 @@ The purpose of the visualization is to aid people when attempting to trade Bitco
 [articles]: https://github.com/6859-sp21/final-project-smart-street-bets/blob/main/articles.png
 [calendar]: https://github.com/6859-sp21/final-project-smart-street-bets/blob/main/calendar.png
 
+![alt text][calendar]
+
+The users have to pick the date and time on the calendar once they access the website.
+
+![alt text][articles]
+After a user pick a date and time on the calendar, the articles of the day before up to the selected date and time will be loaded. For example, if the user pick 16:00 01/01/2021 on the calendar, articles on 12/31/2020 and articles on 01/01/2021 before 16:00 will be loaded and shown to the user. The users could click the left and right arrow to change pages. They can also click the arrows at the top right corner to switch back and forth between articles and reddit posts.
+
 ![alt text][chart]
+Also, the chart will be updated once the user selects date and time. There are two buttons on top-left corner. The 1D mode will show 15-minute data in the span of 12 hours, and the 3M mode will show one-day data in the span of 3 months. 
 
 ## Paper link
 
