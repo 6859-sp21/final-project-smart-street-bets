@@ -25,6 +25,8 @@ Please use Google Chrome to access the website: <https://6859-sp21.github.io/fin
 
 ## Abstract
 
+The purpose of the visualization is to aid people when attempting to trade Bitcoin by giving them access to both quantitative insight to previous historic trades and sentimental analysis for any day within a given range of dates by being able to read and analyze social media posts and threads from Reddit and news articles from various media outlets. Having access to both allows people to be more flexible and thorough with planning and following through with their personalized trading strategy. Although just because something has happened in the past and that does not mean does not mean people cannot gain insight from studying the past and looking for key catalysts from multiple angles for why major events occurred.
+
 ## Paper link
 
 ## Video link
@@ -35,7 +37,9 @@ Please use Google Chrome to access the website: <https://6859-sp21.github.io/fin
 
 * You could hover your mouse over a candlestick, and you will see the date and prices (open, close, low, high) of that data point.
 
-* You could change the mode, which is the period between data points. There are two modes: every 15 minutes, and every day.
+* You could change the mode, which is the period between data points. There are two modes: every 15 minutes (1D), and every day (3M).
+
+* If you are in the 1D mode, the new data point will come in as 15 minutes pass.
 
 
 
