@@ -468,7 +468,7 @@
                 .scale(y)
                 .ticks(Math.floor(height/50));
 
-            x.domain(genData.map(function(d) { return d.Timpstamp; }));
+            x.domain(genData.map(function(d) { return d.Timestamp; }));
             y.domain([minimal, maximal]).nice();
 
             var xtickdelta   = Math.ceil(60/(width/genData.length))
