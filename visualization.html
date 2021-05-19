@@ -627,8 +627,8 @@
       //var parseDate    = d3.timeParse("%Y-%m-%d");
       // parseDate will likely have to be different
       // Not sure how to format minutes
-      var TPeriod      = "3M";
-      var TDays        = {"1D":96, "3M":63};
+      var TPeriod      = "1D";
+      var TDays        = {"1D":48, "3M":60};
       var TIntervals   = {"1D":"minute", "3M":"day",};
       var TFormat      = {"minute":"%d:%d", "day":"%d %b '%y", "week":"%d %b '%y", "month":"%b '%y" };
       var genRaw, genData;
@@ -651,10 +651,11 @@
       }());
 
       // Definitely the one to change once I change from static
+      // function toSlice(data) { return data.slice(-TDays[TPeriod]);  }
       function toSlice(data) { return data.slice(-TDays[TPeriod]);  }
 
       function mainjs() {
-        var toPress    = function() { genData = (TIntervals[TPeriod]!="day")?dataCompress(toSlice(genRaw), TIntervals[TPeriod]):toSlice(genRaw); };
+        var toPress    = function() { genData = (TIntervals[TPeriod]!="minute")?dataCompress(toSlice(genRaw), TIntervals[TPeriod]):toSlice(genRaw); };
         toPress(); displayAll();
         d3.select("#oneD").on("click",   function(){ TPeriod  = "1D"; toPress(); displayAll(); });
         d3.select("#threeM").on("click", function(){ TPeriod  = "3M"; toPress(); displayAll(); });
