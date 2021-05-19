@@ -468,7 +468,7 @@
         }
         else {
           let firstTimeStamp = data[0].Timestamp.getTime() / 1000;
-          let lastTimeStamp = data[data.length].Timestamp.getTime() / 1000;
+          let lastTimeStamp = data[data.length - 1].Timestamp.getTime() / 1000;
 
           let idx = Math.floor( (UNIXtime - firstTimeStamp) / (lastTimeStamp - firstTimeStamp) * data.length );
 
@@ -480,6 +480,8 @@
         // else, return some form of calculation
       }
 
+      var toPress    = function() { genData = (TIntervals[TPeriod]!="minute")?dataCompress(toSlice(genRaw), TIntervals[TPeriod]):toSlice(genRaw); };
+      
       function updateChart() {
         toPress();
         displayAll();
@@ -487,7 +489,7 @@
 
       function mainjs() {
         // Add current time as argument in toPress
-        var toPress    = function() { genData = (TIntervals[TPeriod]!="minute")?dataCompress(toSlice(genRaw), TIntervals[TPeriod]):toSlice(genRaw); };
+        // var toPress    = function() { genData = (TIntervals[TPeriod]!="minute")?dataCompress(toSlice(genRaw), TIntervals[TPeriod]):toSlice(genRaw); };
         toPress(); displayAll();
         d3.select("#oneD").on("click",   function(){ TPeriod  = "1D"; toPress(); displayAll(); });
         d3.select("#threeM").on("click", function(){ TPeriod  = "3M"; toPress(); displayAll(); });
