@@ -560,6 +560,49 @@
       }
 
       /////////
+          // Getting undefined
+        //   g.append("line")
+        //     .attr("y1", d => y(d.low))
+        //     .attr("y2", d => y(d.high));
+
+        //   g.append("line")
+        //     .attr("y1", d => y(d.open))
+        //     .attr("y2", d => y(d.close))
+        //     .attr("stroke-width", x.bandwidth())
+        //     .attr("stroke", d => d.open > d.close ? d3.schemeSet1[0]
+        //       : d.close > d.open ? d3.schemeSet1[2]
+        //       : d3.schemeSet1[8])
+        //     .on("mouseover", function(event, d) {
+        //       tooltip.transition()
+        //         .duration(200)
+        //         .style("opacity", .9);
+        //       tooltip.html("Date: " + d.date.toString().slice(0,15) + "<br/> Open: " + d.open + "<br/> Close: " + d.close + "<br/> Low: " + 
+        //                     d.low + "<br/> High: " + d.high)
+        //         .style("left", (event.pageX) + "px")
+        //         .style("background", "beige")
+        //         .style("top", (event.pageY - 28) + "px");
+
+        //       d3.select(this)
+        //         .attr("opacity", .5)
+        //     })
+        //     .on("mouseout", function(event, d) {
+        //       tooltip.transition()
+        //         .duration(500)
+        //         .style("opacity", 0);
+
+        //       d3.select(this)
+        //         .attr("opacity", 1)
+        //     })
+
+        //   g.append("title")
+        //       .text(d => `${formatDate(d.date)}
+        //       Open: ${formatValue(d.open)}
+        //       Close: ${formatValue(d.close)} (${formatChange(d.open, d.close)})
+        //       Low: ${formatValue(d.low)}
+        //       High: ${formatValue(d.high)}`);
+          
+        //       document.getElementById("chart").appendChild(svg.node());
+        // })
             
       const imgSize = {width: 50, height: 50};
 
@@ -693,6 +736,26 @@
         if (title.length > 90) {
           return title.slice(0, 90) + '...'; 
         }
+        if ((page+1)*4 >= redditSmall.length) {
+          blockButton("right");
+        } else {
+          unblockButton("right");
+        }
+
+        if (page === 0) {
+          blockButton("left");
+        } else {
+          unblockButton("left");
+        }
+
+        let pageNum = document.querySelector("#page-number");
+        pageNum.innerHTML = (page+1) + "/" + Math.ceil(redditSmall.length / 4);
+      }
+
+      function truncateTitle(title) {
+        if (title.length > 90) {
+          return title.slice(0, 90) + '...'; 
+        }
         return title
       }
 
@@ -700,6 +763,147 @@
         for (let i = 0; i < 4; i++) {
           let textId = "#article-" + i + "-text";
           let imgId = "#article-" + i + "-img";
+
+          let sectionText = document.querySelector(textId);
+          let sectionImage = document.querySelector(imgId);
+
+          sectionText.querySelectorAll('*').forEach(n => n.remove());
+          sectionImage.querySelectorAll('*').forEach(n => n.remove());
+        }
+
+        let pageNum = document.querySelector("#page-number");
+        pageNum.innerHTML = "";
+      }
+
+      let mode = 0 // 0: articles 1: posts
+      var articlesSmall = []; // This will be displayed.
+      var redditSmall = []; // This will be displayed.
+      let page = 0;
+      let globalTime = undefined;
+      setInterval(incrementTime, 60000)
+
+      function toggleMode() {
+        page = 0;
+        deleteArticles();
+        let title = document.querySelector('#title');
+
+        if (mode === 0) {
+          mode = 1;
+          title.innerHTML = "Reddit"
+          reloadReddit(redditSmall);
+        } else {
+          mode = 0;
+          title.innerHTML = "Articles"
+          reloadArticles(articlesSmall);
+        }
+      }
+
+      function nextPage() {
+        deleteArticles();
+        page++;
+        if (mode === 0) {
+          reloadArticles(articlesSmall.slice(4*page, 4*(page+1)));
+        } else {
+          reloadReddit(redditSmall.slice(4*page, 4*(page+1)));
+        }
+      }
+
+      function prevPage() {
+        deleteArticles();
+        page--;
+        if (mode === 0) {
+          reloadArticles(articlesSmall.slice(4*page, 4*(page+1)));
+        } else {
+          reloadReddit(redditSmall.slice(4*page, 4*(page+1)));
+        }
+      }
+
+      function blockButton(flag) {
+
+        if (flag === "right") {
+          let right = document.querySelector("#right-arrow");
+          right.onclick = null;
+          right.style.opacity = 0.4;
+        }
+
+        if (flag === "left") {
+          let left = document.querySelector("#left-arrow");
+          left.onclick = null;
+          left.style.opacity = 0.4;
+        }
+        return title
+      }
+
+      function deleteArticles() {
+        for (let i = 0; i < 4; i++) {
+          let textId = "#article-" + i + "-text";
+          let imgId = "#article-" + i + "-img";
+      function unblockButton(flag) {
+        if (flag === "right") {
+          let right = document.querySelector("#right-arrow");
+          right.onclick = nextPage;
+          right.style.opacity = 1;
+        }
+
+        if (flag === "left") {
+          let left = document.querySelector("#left-arrow");
+          left.onclick = prevPage;
+          left.style.opacity = 1;
+        }
+      }
+
+      function submitDateTime() {
+        deleteArticles();
+        filterArticles();
+        globalTime = new Date(document.querySelector("#calendar").value);
+        displayDateTime();
+      }
+
+      function incrementTime() {
+        if (globalTime !== undefined) {
+          globalTime = new Date(globalTime.getTime() + 60000);
+          displayDateTime();
+        }
+      }
+
+      function displayDateTime() {
+        let text = document.querySelector("#current-date");
+        text.innerHTML = formatDateString(globalTime);
+      }
+
+      function getDateString(date) {
+        let year = date.getFullYear();
+        let mm = pad(date.getMonth()+1, 2);
+        let dd = pad(date.getDate(), 2);
+        return year + '-' + mm + '-' + dd;
+      }
+
+      function filterArticles() {
+        let dateString = document.querySelector("#calendar").value;
+        let today = new Date(dateString);
+        let todayString = dateString.slice(0,10);
+
+        let yesterday = new Date(today.getTime())
+        yesterday.setDate(today.getDate() - 1);
+       
+        let yesterdayString = getDateString(yesterday);
+        
+        articles1 = articles[yesterdayString];
+        articles2 = articles[todayString].filter(d => d.date < today);
+        articlesSmall = articles1.concat(articles2);
+        
+        reddit1 = posts[yesterdayString];
+        reddit2 = posts[todayString].filter(d => d.date < today);
+        redditSmall = reddit1.concat(reddit2);
+        
+        page =0;
+
+        if (mode === 0) {
+          reloadArticles(articlesSmall);
+        } else {
+          reloadReddit(redditSmall);
+        }
+      }
 
           let sectionText = document.querySelector(textId);
           let sectionImage = document.querySelector(imgId);
