@@ -431,7 +431,7 @@
       // parseDate will likely have to be different
       // Not sure how to format minutes
       var TPeriod      = "1D";
-      var TDays        = {"1D":48, "3M":5760}; // Going to try 5760 instead of 60 and see if it works
+      var TDays        = {"1D":48, "3M":8640}; // 24 * 4 * 90
       var TIntervals   = {"1D":"minute", "3M":"day",};
       var TFormat      = {"minute":"%I:%M %p", "day":"%d %b '%y", "week":"%d %b '%y", "month":"%b '%y" };
       var genRaw, genData;
