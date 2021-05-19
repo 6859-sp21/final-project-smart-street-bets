@@ -106,15 +106,65 @@
         margin-top: 10px;
       }
 
+      #chart .grid { stroke-opacity: .3; }
+      #chart .axis line,
+      #chart .axis.xaxis path { fill: none; stroke: darkgrey; shape-rendering: crispEdges; }
+      #chart .tick text { font: 10px sans-serif; fill: darkgrey; stroke-opacity: .3; }
+      #chart .axis.yaxis path { fill: none; stroke: #292f3b; }
+
+      #chart .bands rect { fill: darkgrey; fill-opacity: 0; stroke-opacity: 0; pointer-events: all; shape-rendering: crispEdges; }
+      #chart .bands .hoved { fill-opacity: .6; }
+      #chart .sticks rect { pointer-events: none; shape-rendering: crispEdges; }
+      #chart .sticks .rise, #chart .candles .rise { fill: green; } 
+      #chart .sticks .fall, #chart .candles .fall { fill: red; }
+      #chart .sticks .hoved { stroke: white; }
+      #chart .candles .hoved { stroke: white; }
+      #chart .candles rect {  shape-rendering: crispEdges; }
+
+      #chart .bbmn { fill: none; stroke: cyan; stroke-width: 1.5px; pointer-events: none; }
+      #chart .bbup { fill: none; stroke: green; stroke-width: 1.5px; pointer-events: none; }
+      #chart .bbdn { fill: none; stroke: crimson; stroke-width: 1.5px; pointer-events: none; }
+
+      #chart .volumebar { fill: darkgrey; } 
+      #chart .volumebar rect { pointer-events: none; }
+      #chart .volumebar .hoved { fill: white; }
+      #chart .sigmabar { fill: darkgrey; } 
+      #chart .sigmabar rect { pointer-events: none; }
+      #chart .sigmabar .hoved { fill: white; }
+
+      #option    { width: 230px; height: 25px; float: left; padding-top: 5px; }
+      #option input { cursor: pointer; border-radius: 5px; color: #fff; background: #696d75; border: none; }
+      #option input {
+                      -webkit-box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.75);
+                      -moz-box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.75);
+                      box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.75);
+                    }
+      #option .active { cursor: auto; background: #94979d; }
+      #option .active {
+                      -webkit-box-shadow: none;
+                      -moz-box-shadow: none;
+                      box-shadow: none;
+                    }
+      #infobar   { width: 440px; height: 25px; float: left; padding-top: 5px; text-align: left; font-family: sans-serif; }
+      .infohead  { width: 140px; height: 25px; margin: 0px 2px; float: left; }
+      .infobox   { width: 70px; height: 30px; margin: 0px 2px; float: left; }
+
     </style>
   </head>
   <body>
     <h1>Smart Street Bets</h1>
-    <h2>Bitcoin (BTC)</h2>
+    <h2>Bitcoin (BTC) Price History</h2>
     <div id="all">
       <div id="left">
         <!-- Chart  -->
-        <div id="chart">
+        <div id="chartbox">
+          <div id="option">
+            <input id="oneD" name="1D" type="button" value="1D" />
+            <input id="threeM" name="3M" type="button" value="3M" />
+          </div>
+          <div id="chart">
+
+          </div>
         </div>
         <div id="calculation">
         </div>
@@ -175,135 +225,384 @@
     <script type="text/javascript" src="articles.json"></script>
     <script type="text/javascript" src="posts.json"></script>
     <script>
+      // Base value is undefined
+      let currChartInterval = undefined;
 
-        const height = 300;
-        const width = 1200; // Not sure if this is needed
-        const margin = ({top: 20, right: 30, bottom: 30, left: 40})
+      // cschart 
+      function cschart() {
 
-        // Functions
-        let parseDate = d3.utcParse("%Y-%m-%d");
-        let formatChange = (y0, y1) => {
-            const f = d3.format("+.2%");
-            return (y0, y1) => f((y1 - y0) / y0);
-          }
+        var margin = {top: 10, right: 50, bottom: 40, left: 10},
+            width = 1200, height = 400, Bheight = 400;
 
-        let formatValue = d3.format(".2f");
-        let formatDate = d3.utcFormat("%B %-d, %Y");
+        function csrender(selection) {
+          selection.each(function() {
 
-        let tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
+            var tooltip = d3.select("body").append("div")
+              .attr("class", "tooltip")
+              .style("opacity", 0);
+        
+            var interval = TIntervals[TPeriod];
 
-        d3.csv("https://raw.githubusercontent.com/6859-sp21/final-project-smart-street-bets/main/BTC-USD.csv")
-        .then(data => {
-          // Last 120 days of dataset 
-          const data120 = data.map(d => {
-            const date = parseDate(d["Date"]);
-            return {
-              date,
-              high: +d["High"],
-              low: +d["Low"],
-              open: +d["Open"],
-              close: +d["Close"]
-            };
-          }).slice(-120);
+            var minimal  = d3.min(genData, function(d) { return d.Low; });
+            var maximal  = d3.max(genData, function(d) { return d.High; });
 
-          let xAxis = (g) => {
-            g.attr("transform", `translate(0,${height - margin.bottom})`)
-              .call(d3.axisBottom(x)
-                .tickValues(d3.utcMonday
-                    .every(width > 720 ? 1 : 2)
-                    .range(data120[0].date, data120[data120.length - 1].date))
-                .tickFormat(d3.utcFormat("%-m/%-d")))
-              .call(g => g.select(".domain").remove())
-          }
-
-          let yAxis = (g) => {
-            g.attr("transform", `translate(${margin.left},0)`)
-              .call(d3.axisLeft(y)
-                .tickFormat(d3.format("$~f"))
-                .tickValues(d3.scaleLinear().domain(y.domain()).ticks()))
-              .call(g => g.selectAll(".tick line").clone()
-                .attr("stroke-opacity", 0.2)
-                .attr("x2", width - margin.left - margin.right))
-              .call(g => g.select(".domain").remove())
-          }
-
-          let x = d3.scaleBand()
-            .domain(d3.utcDay
-                .range(data120[0].date, +data120[data120.length - 1].date + 1)
-                // Crypto is 24/7
-                // .filter(d => d.getUTCDay() !== 0 && d.getUTCDay() !== 6)
-                )
-            .range([margin.left, width - margin.right])
-            .padding(0.2);
-
-          let y = d3.scaleLog()
-            .domain([d3.min(data120, d => d.low), d3.max(data120, d => d.high)])
-            .rangeRound([height - margin.bottom, margin.top])
-            const svg = d3.create("svg")
-            .attr("viewBox", [0, 0, width, height]);
-
-          svg.append("g")
-              .call(xAxis);
-
-          svg.append("g")
-              .call(yAxis);
-
-          const g = svg.append("g")
-            .attr("stroke-linecap", "round")
-            .attr("stroke", "black")
-            .selectAll("g")
-            .data(data120)
-            .join("g")
-              // Have to parse the date
-              // Problem with x
-              .attr("transform", d => `translate(${x(d.date)},0)`);
+            var extRight = width + margin.right
+            var x = d3.scaleBand()
+                .range([margin.left, width-margin.right]);
             
+            var y = d3.scaleLinear()
+                .range([height-margin.bottom, margin.top])
+                // .range([height, 0]);
+            
+            var xAxis = d3.axisBottom()
+                .scale(x)
+                .tickFormat(d3.timeFormat(TFormat[interval]));
+            
+            var yAxis = d3.axisRight()
+                .scale(y)
+                .ticks(Math.floor(height/50))
+                .tickFormat(d => "$" + d);
 
-          // Getting undefined
-          g.append("line")
-            .attr("y1", d => y(d.low))
-            .attr("y2", d => y(d.high));
+            x.domain(genData.map(function(d) { return d.Timestamp; }));
+            y.domain([minimal, maximal]).nice();
 
-          g.append("line")
-            .attr("y1", d => y(d.open))
-            .attr("y2", d => y(d.close))
-            .attr("stroke-width", x.bandwidth())
-            .attr("stroke", d => d.open > d.close ? d3.schemeSet1[0]
-              : d.close > d.open ? d3.schemeSet1[2]
-              : d3.schemeSet1[8])
-            .on("mouseover", function(event, d) {
-              tooltip.transition()
-                .duration(200)
-                .style("opacity", .9);
-              tooltip.html("Date: " + d.date.toString().slice(0,15) + "<br/> Open: " + d.open + "<br/> Close: " + d.close + "<br/> Low: " + 
-                            d.low + "<br/> High: " + d.high)
-                .style("left", (event.pageX) + "px")
-                .style("background", "beige")
-                .style("top", (event.pageY - 28) + "px");
+            var xtickdelta   = Math.ceil(60/(width/genData.length))
+            xAxis.tickValues(x.domain().filter(function(d, i) { return !((i+Math.floor(xtickdelta/2)) % xtickdelta); }));
 
-              d3.select(this)
-                .attr("opacity", .5)
-            })
-            .on("mouseout", function(event, d) {
-              tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
+            var barwidth    = x.bandwidth();
+            var candlewidth = Math.floor(d3.min([barwidth*0.8, 13])/2)*2+1;
+            var delta       = Math.round((barwidth-candlewidth)/2);
 
-              d3.select(this)
-                .attr("opacity", 1)
-            })
+            d3.select(this).select("svg").remove();
+            var svg = d3.select(this).append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", Bheight + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+            svg.append("g")
+                .attr("class", "axis xaxis")
+                .attr("transform", "translate(0," + (height-margin.bottom) + ")")
+                .call(xAxis);
+                //.call(xAxis.orient("bottom").outerTickSize(0));
 
-          g.append("title")
-              .text(d => `${formatDate(d.date)}
-              Open: ${formatValue(d.open)}
-              Close: ${formatValue(d.close)} (${formatChange(d.open, d.close)})
-              Low: ${formatValue(d.low)}
-              High: ${formatValue(d.high)}`);
+            svg.append("g")
+                .attr("class", "axis yaxis")
+                .attr("transform", "translate(" + (width-margin.right) + ",0)")
+                .call(yAxis);
+                //.call(yAxis.orient("right").tickSize(0));
+
+            svg.append("g")
+                .attr("class", "axis grid")
+                .attr("transform", "translate(" + (width-margin.right) + ",0)")
+                .call(yAxis);
+                //.call(yAxis.orient("left").tickFormat("").tickSize(width).outerTickSize(0));
+
+            var bands = svg.selectAll(".bands")
+                .data([genData])
+              .enter().append("g")
+                .attr("class", "bands");
+
+            bands.selectAll("rect")
+                .data(function(d) { return d; })
+              .enter().append("rect")
+                .attr("x", function(d) { return x(d.Timestamp) + Math.floor(barwidth/2); })
+                .attr("y", 0)
+                .attr("height", Bheight)
+                .attr("width", 1)
+                .attr("class", function(d, i) { return "band"+i; })
+                .style("stroke-width", Math.floor(barwidth));
+
+            var stick = svg.selectAll(".sticks")
+                .data([genData])
+              .enter().append("g")
+                .attr("class", "sticks");
+
+            stick.selectAll("rect")
+                .data(function(d) { return d; })
+              .enter().append("rect")
+                .attr("x", function(d) { return x(d.Timestamp) + Math.floor(barwidth/2); })
+                .attr("y", function(d) { return y(d.High); })
+                .attr("class", function(d, i) { return "stick"+i; })
+                .attr("height", function(d) { return y(d.Low) - y(d.High); })
+                .attr("width", 1)
+                .classed("rise", function(d) { return (d.Close>d.Open); })
+                .classed("fall", function(d) { return (d.Open>d.Close); });
+
+            var candle = svg.selectAll(".candles")
+                .data([genData])
+              .enter().append("g")
+                .attr("class", "candles");
+
+            candle.selectAll("rect")
+                .data(function(d) { return d; })
+              .enter().append("rect")
+                .attr("x", function(d) { return x(d.Timestamp) + delta; })
+                .attr("y", function(d) { return y(d3.max([d.Open, d.Close])); })
+                .attr("class", function(d, i) { return "candle"+i; })
+                .attr("height", function(d) { return y(d3.min([d.Open, d.Close])) - y(d3.max([d.Open, d.Close])); })
+                .attr("width", candlewidth)
+                .classed("rise", function(d) { return (d.Close>d.Open); })
+                .classed("fall", function(d) { return (d.Open>d.Close); })
+                .on("mouseover", function(event, d) {
+                  tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                  tooltip.html("Date: " + formatDateTime(d.Timestamp) + "<br/> Open: " + d.Open + "<br/> Close: " + d.Close + "<br/> Low: " + 
+                            d.Low + "<br/> High: " + d.High)
+                    .style("left", (event.pageX) + "px")
+                    .style("background", "beige")
+                    .style("top", (event.pageY - 28) + "px");
+
+                  d3.select(this)
+                    .attr("opacity", .5)})
+                .on("mouseout", function(event, d) {
+                  tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+
+                  d3.select(this)
+                    .attr("opacity", 1)})
+            });
+        } // csrender
+
+        csrender.Bheight = function(value) {
+                  if (!arguments.length) return Bheight;
+                  Bheight = value;
+                  return csrender;
+              };
+
+        return csrender;
+      } // cschart
+
+      // Data prep
+
+      function genType(d) {
+        d.Timestamp =  (d.Timestamp === "NaN") ? new Date() : new Date(d.Timestamp * 1000);
+        // d.TIMESTAMP  = parseDate(d.TIMESTAMP);
+        // d.TIMESTAMP  = +d.TIMESTAMP; // No difference
+        d.Low        = (d.Low === "NaN") ? 0 : +d.Low;
+        d.High       = (d.High === "NaN") ? 0 : +d.High; 
+        d.Open       = (d.Open === "NaN") ? 0 : +d.Open;
+        d.Close      = (d.Close === "NaN") ? 0 : +d.Close;
+        // d.TURNOVER   = +d.TURNOVER;
+        // d.VOLATILITY = +d.VOLATILITY;
+        return d;
+      }
+
+      // Just 1 interval in our case
+      function timeCompare(date, interval) {
+        if (interval == "day")      { var durfn = d3.timeDay(date); } // Returns day interval the date is in
+        return durfn;
+      }
+
+      function dataCompress(data, interval) {
+        // Only 1 interval being used (Because of 60 datapoint limit!!)
+        // Keys will be dates in Unix
+        // Day in UNIX -> Array pairs 
+        var dataByDay = d3.group(data, d => new Date(d.Timestamp.getMonth() + 1 + "-" + d.Timestamp.getDate() + "-" + d.Timestamp.getFullYear()).getTime() / 1000);
+        var compressedData = []; 
+
+        dataByDay.forEach((v, k, m) => { 
+          // k is the UNIX value
+          // v is the array associated with k
+          curr_datapoint = {High: -1.7976931348623157E+10308, Low: 1.7976931348623157E+10308};
+          for (let i = 0; i < v.length; i++) {
+            if (i == 0) {
+              curr_datapoint.Timestamp = v[i].Timestamp;
+              curr_datapoint.Open = v[i].Open;
+
+            }
+            else if (i == v.length -1) {
+              curr_datapoint.Close = v[i].Close;
+            }
+            curr_datapoint.High = Math.max(curr_datapoint.High, v[i].High);
+            curr_datapoint.Low = Math.min(curr_datapoint.Low, v[i].Low);
+          }
+          compressedData.push(curr_datapoint);
+        
+        });
+        return compressedData;
+      }
+
+      // mainjs
+      // Timestamp is currently NULL right now 
+      //var parseDate    = d3.timeParse("%Y-%m-%d");
+      // parseDate will likely have to be different
+      // Not sure how to format minutes
+      var TPeriod      = "1D";
+      var TDays        = {"1D":48, "3M":8640}; // 24 * 4 * 90
+      var TIntervals   = {"1D":"minute", "3M":"day",};
+      var TFormat      = {"minute":"%I:%M %p", "day":"%d %b '%y", "week":"%d %b '%y", "month":"%b '%y" };
+      var genRaw, genData;
           
-              document.getElementById("chart").appendChild(svg.node());
-        })
+      // Self-executing 
+      // Retrieves all the datapoints
+      (function() {
+         d3.csv("https://raw.githubusercontent.com/6859-sp21/final-project-smart-street-bets/f1b9d3e3bdca09f96f9c3590cf5a70ff8f3849bb/bitstampUSB_15-min_data_2012-01-01_to_2021-03-31.csv", genType)
+          .then(data => {
+            // console.log(data);
+            genRaw = data;
+            mainjs();
+          })
+          // d3.csv("https://raw.githubusercontent.com/6859-sp21/final-project-smart-street-bets/f1b9d3e3bdca09f96f9c3590cf5a70ff8f3849bb/bitstampUSB_15-min_data_2012-01-01_to_2021-03-31.csv", genType, function(data) {
+          //   console.log(data);
+          //   genRaw         = data;
+          //   console.log(genRaw);
+          //   mainjs();
+          // }); 
+      }());
+
+      // Definitely the one to change once I change from static
+      // Floor of some calculation (Have to index by array)
+      // function toSlice(data) { return data.slice(-TDays[TPeriod]);  }
+      function toSlice(data) { 
+        // Going to use global variable globalTime instead of passing it in as argument
+        let UNIXtime = (globalTime == undefined) ? undefined : globalTime.getTime() / 1000;
+        console.log(UNIXtime); // Going to be undefined first
+        if (UNIXtime == undefined || UNIXtime >= (new Date('2021.03.30').getTime() / 1000 - TDays[TPeriod])) {
+          return data.slice(-TDays[TPeriod]);  
+        }
+        else if (UNIXtime <= (new Date('2012.1.1').getTime() / 1000) + TDays[TPeriod]) {
+          return data.slice(0, TDays[TPeriod]);
+        }
+        else {
+          let idx;
+          for (let i = 1; i < data.length; i++) {
+            let currTime = data[i].Timestamp.getTime() / 1000;
+            if (currTime > UNIXtime) {
+              console.log(new Date(currTime * 1000));
+              idx = i;
+              break;
+            }
+          }
+          
+          // let firstTimeStamp = data[1].Timestamp.getTime() / 1000;
+          // let lastTimeStamp = data[data.length - 1].Timestamp.getTime() / 1000;
+          // // Off-error from 1st datapoint being invalid
+          // let idx = Math.floor( (UNIXtime - 900000 - firstTimeStamp) / (lastTimeStamp - firstTimeStamp) * data.length );
+          // console.log(new Date(firstTimeStamp * 1000));
+          // console.log(new Date(lastTimeStamp * 1000));
+          console.log(idx);
+          return data.slice(idx -TDays[TPeriod], idx);
+
+          // The meat of the work
+        }
+        // else, return some form of calculation
+      }
+
+      var toPress    = function() { genData = (TIntervals[TPeriod]!="minute")?dataCompress(toSlice(genRaw), TIntervals[TPeriod]):toSlice(genRaw); };
+      
+      function updateChart() {
+        // Global time is updated every minute
+        toPress();
+        displayAll();
+      }
+
+      function mainjs() {
+        // Add current time as argument in toPress
+        // var toPress    = function() { genData = (TIntervals[TPeriod]!="minute")?dataCompress(toSlice(genRaw), TIntervals[TPeriod]):toSlice(genRaw); };
+        toPress(); displayAll();
+        d3.select("#oneD").on("click",   function(){ TPeriod  = "1D"; toPress(); displayAll(); });
+        d3.select("#threeM").on("click", function(){ TPeriod  = "3M"; toPress(); displayAll(); });
+      }
+
+      function displayAll() {
+          changeClass();
+          displayCS();
+          // displayGen(genData.length-1);
+      }
+
+      function changeClass() {
+          if (TPeriod =="1D") {
+              d3.select("#oneD").classed("active", true);
+              d3.select("#threeM").classed("active", false);
+          } else if (TPeriod =="3M") {
+              d3.select("#oneD").classed("active", false);
+              d3.select("#threeM").classed("active", true);
+          }
+      }
+
+      function displayCS() {
+          var chart       = cschart().Bheight(460);
+          d3.select("#chart").call(chart);
+          // var chart       = barchart().mname("volume").margin(320).MValue("TURNOVER");
+          // d3.select("#chart").datum(genData).call(chart);
+          // var chart       = barchart().mname("sigma").margin(400).MValue("VOLATILITY");
+          // d3.select("#chart").datum(genData).call(chart);
+          hoverAll();
+      }
+
+      function hoverAll() {
+          d3.select("#chart1").select(".bands").selectAll("rect")
+                .on("mouseover", function(d, i) {
+                    d3.select(this).classed("hoved", true);
+                    d3.select(".stick"+i).classed("hoved", true);
+                    d3.select(".candle"+i).classed("hoved", true);
+                    // d3.select(".volume"+i).classed("hoved", true);
+                    // d3.select(".sigma"+i).classed("hoved", true);
+                    displayGen(i);
+                })                  
+                .on("mouseout", function(d, i) {
+                    d3.select(this).classed("hoved", false);
+                    d3.select(".stick"+i).classed("hoved", false);
+                    d3.select(".candle"+i).classed("hoved", false);
+                    // d3.select(".volume"+i).classed("hoved", false);
+                    // d3.select(".sigma"+i).classed("hoved", false);
+                    displayGen(genData.length-1);
+                });
+      }
+
+      // Something to do with the header?? Don't know what displayGen does
+      function displayGen(mark) {
+          var header      = csheader();
+          d3.select("#infobar").datum(genData.slice(mark)[0]).call(header);
+      }
+
+      /////////
+          // Getting undefined
+        //   g.append("line")
+        //     .attr("y1", d => y(d.low))
+        //     .attr("y2", d => y(d.high));
+
+        //   g.append("line")
+        //     .attr("y1", d => y(d.open))
+        //     .attr("y2", d => y(d.close))
+        //     .attr("stroke-width", x.bandwidth())
+        //     .attr("stroke", d => d.open > d.close ? d3.schemeSet1[0]
+        //       : d.close > d.open ? d3.schemeSet1[2]
+        //       : d3.schemeSet1[8])
+        //     .on("mouseover", function(event, d) {
+        //       tooltip.transition()
+        //         .duration(200)
+        //         .style("opacity", .9);
+        //       tooltip.html("Date: " + d.date.toString().slice(0,15) + "<br/> Open: " + d.open + "<br/> Close: " + d.close + "<br/> Low: " + 
+        //                     d.low + "<br/> High: " + d.high)
+        //         .style("left", (event.pageX) + "px")
+        //         .style("background", "beige")
+        //         .style("top", (event.pageY - 28) + "px");
+
+        //       d3.select(this)
+        //         .attr("opacity", .5)
+        //     })
+        //     .on("mouseout", function(event, d) {
+        //       tooltip.transition()
+        //         .duration(500)
+        //         .style("opacity", 0);
+
+        //       d3.select(this)
+        //         .attr("opacity", 1)
+        //     })
+
+        //   g.append("title")
+        //       .text(d => `${formatDate(d.date)}
+        //       Open: ${formatValue(d.open)}
+        //       Close: ${formatValue(d.close)} (${formatChange(d.open, d.close)})
+        //       Low: ${formatValue(d.low)}
+        //       High: ${formatValue(d.high)}`);
+          
+        //       document.getElementById("chart").appendChild(svg.node());
+        // })
             
       const imgSize = {width: 50, height: 50};
 
@@ -320,6 +619,16 @@
       function formatDateString(dateString) {
         let date = new Date(dateString);
 
+        let year = date.getFullYear();
+        let month = monthList[date.getMonth()];
+        let dateNo = date.getDate();
+        let hour = date.getHours();
+        let minute = date.getMinutes();
+
+        return hour + ':' + pad(minute, 2) + ' ' + dateNo + ' ' + month + ' ' + year
+      }
+
+      function formatDateTime(date) {
         let year = date.getFullYear();
         let month = monthList[date.getMonth()];
         let dateNo = date.getDate();
@@ -427,6 +736,26 @@
         if (title.length > 90) {
           return title.slice(0, 90) + '...'; 
         }
+        if ((page+1)*4 >= redditSmall.length) {
+          blockButton("right");
+        } else {
+          unblockButton("right");
+        }
+
+        if (page === 0) {
+          blockButton("left");
+        } else {
+          unblockButton("left");
+        }
+
+        let pageNum = document.querySelector("#page-number");
+        pageNum.innerHTML = (page+1) + "/" + Math.ceil(redditSmall.length / 4);
+      }
+
+      function truncateTitle(title) {
+        if (title.length > 90) {
+          return title.slice(0, 90) + '...'; 
+        }
         return title
       }
 
@@ -434,6 +763,147 @@
         for (let i = 0; i < 4; i++) {
           let textId = "#article-" + i + "-text";
           let imgId = "#article-" + i + "-img";
+
+          let sectionText = document.querySelector(textId);
+          let sectionImage = document.querySelector(imgId);
+
+          sectionText.querySelectorAll('*').forEach(n => n.remove());
+          sectionImage.querySelectorAll('*').forEach(n => n.remove());
+        }
+
+        let pageNum = document.querySelector("#page-number");
+        pageNum.innerHTML = "";
+      }
+
+      let mode = 0 // 0: articles 1: posts
+      var articlesSmall = []; // This will be displayed.
+      var redditSmall = []; // This will be displayed.
+      let page = 0;
+      let globalTime = undefined;
+      setInterval(incrementTime, 60000)
+
+      function toggleMode() {
+        page = 0;
+        deleteArticles();
+        let title = document.querySelector('#title');
+
+        if (mode === 0) {
+          mode = 1;
+          title.innerHTML = "Reddit"
+          reloadReddit(redditSmall);
+        } else {
+          mode = 0;
+          title.innerHTML = "Articles"
+          reloadArticles(articlesSmall);
+        }
+      }
+
+      function nextPage() {
+        deleteArticles();
+        page++;
+        if (mode === 0) {
+          reloadArticles(articlesSmall.slice(4*page, 4*(page+1)));
+        } else {
+          reloadReddit(redditSmall.slice(4*page, 4*(page+1)));
+        }
+      }
+
+      function prevPage() {
+        deleteArticles();
+        page--;
+        if (mode === 0) {
+          reloadArticles(articlesSmall.slice(4*page, 4*(page+1)));
+        } else {
+          reloadReddit(redditSmall.slice(4*page, 4*(page+1)));
+        }
+      }
+
+      function blockButton(flag) {
+
+        if (flag === "right") {
+          let right = document.querySelector("#right-arrow");
+          right.onclick = null;
+          right.style.opacity = 0.4;
+        }
+
+        if (flag === "left") {
+          let left = document.querySelector("#left-arrow");
+          left.onclick = null;
+          left.style.opacity = 0.4;
+        }
+        return title
+      }
+
+      function deleteArticles() {
+        for (let i = 0; i < 4; i++) {
+          let textId = "#article-" + i + "-text";
+          let imgId = "#article-" + i + "-img";
+      function unblockButton(flag) {
+        if (flag === "right") {
+          let right = document.querySelector("#right-arrow");
+          right.onclick = nextPage;
+          right.style.opacity = 1;
+        }
+
+        if (flag === "left") {
+          let left = document.querySelector("#left-arrow");
+          left.onclick = prevPage;
+          left.style.opacity = 1;
+        }
+      }
+
+      function submitDateTime() {
+        deleteArticles();
+        filterArticles();
+        globalTime = new Date(document.querySelector("#calendar").value);
+        displayDateTime();
+      }
+
+      function incrementTime() {
+        if (globalTime !== undefined) {
+          globalTime = new Date(globalTime.getTime() + 60000);
+          displayDateTime();
+        }
+      }
+
+      function displayDateTime() {
+        let text = document.querySelector("#current-date");
+        text.innerHTML = formatDateString(globalTime);
+      }
+
+      function getDateString(date) {
+        let year = date.getFullYear();
+        let mm = pad(date.getMonth()+1, 2);
+        let dd = pad(date.getDate(), 2);
+        return year + '-' + mm + '-' + dd;
+      }
+
+      function filterArticles() {
+        let dateString = document.querySelector("#calendar").value;
+        let today = new Date(dateString);
+        let todayString = dateString.slice(0,10);
+
+        let yesterday = new Date(today.getTime())
+        yesterday.setDate(today.getDate() - 1);
+       
+        let yesterdayString = getDateString(yesterday);
+        
+        articles1 = articles[yesterdayString];
+        articles2 = articles[todayString].filter(d => d.date < today);
+        articlesSmall = articles1.concat(articles2);
+        
+        reddit1 = posts[yesterdayString];
+        reddit2 = posts[todayString].filter(d => d.date < today);
+        redditSmall = reddit1.concat(reddit2);
+        
+        page =0;
+
+        if (mode === 0) {
+          reloadArticles(articlesSmall);
+        } else {
+          reloadReddit(redditSmall);
+        }
+      }
 
           let sectionText = document.querySelector(textId);
           let sectionImage = document.querySelector(imgId);
@@ -522,6 +992,17 @@
         deleteArticles();
         filterArticles();
         globalTime = new Date(document.querySelector("#calendar").value);
+
+        // Get rid of any current chart intervals 
+        if (currChartInterval != undefined) {
+          clearInterval(currChartInterval)
+        }
+        // Update chart using new globalTime
+        updateChart();
+
+        // Set interval for updating chart every 15 minutes, if not submitted 
+        currChartInterval = setInterval(updateChart, 900000);
+
         displayDateTime();
       }
 
@@ -544,12 +1025,16 @@
         return year + '-' + mm + '-' + dd;
       }
 
+      //Printing for testing purposes
+      //Need to change (AND save??) values to use for graph
       function filterArticles() {
         let dateString = document.querySelector("#calendar").value;
+        console.log(dateString);
         let today = new Date(dateString);
         let todayString = dateString.slice(0,10);
 
         let yesterday = new Date(today.getTime())
+        console.log(yesterday);
         yesterday.setDate(today.getDate() - 1);
        
         let yesterdayString = getDateString(yesterday);
@@ -570,24 +1055,6 @@
           reloadReddit(redditSmall);
         }
       }
-
-      // 1. Download data
-      d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-videogamessales/main/vgsalesglobale.csv")
-      .then(data => {
-      // 2. Setting up variables that describe our chart's space.
-      const height = 450;
-      const width = 800;
-      const margin = ({top: 20, right: 60, bottom: 35, left: 60});
-      
-      const colorScale = d3.scaleOrdinal()
-          .domain([0,9])
-          .range(d3.schemeTableau10);
-
-      const colorScale12 = d3.scaleOrdinal()
-          .domain([0,11])
-          .range(d3.schemeSet3);
-
-      })
       
     </script>
   </body>
