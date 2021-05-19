@@ -18,7 +18,7 @@ Work was mostly done independently through pushing code to either the main branc
 
 ## Warning
 
-Please use Google Chrome to access the website:
+Please use Google Chrome to access the website: <https://6859-sp21.github.io/final-project-smart-street-bets/visualization.html>.
 
 ## Summary image
 
@@ -30,7 +30,11 @@ Please use Google Chrome to access the website:
 
 ## Instructions
 
-Select the date on the calendar. After that you will see the data on the graph, and articles about bitcoin on that day and the day before.
+* Select the date on the calendar. After that you will see the data on the graph, and articles about bitcoin on that day and the day before.
+
+* You could hover your mouse over a candlestick, and you will see the date and prices (open, close, low, high) of that data point.
+
+* You could change the mode, which is the period between data points. There are two modes: every 15 minutes, and every day.
 
 
 
