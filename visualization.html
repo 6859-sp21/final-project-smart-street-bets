@@ -459,7 +459,7 @@
       function toSlice(data) { 
         // Going to use global variable globalTime instead of passing it in as argument
         let UNIXtime = (globalTime == undefined) ? undefined : globalTime.getTime() / 1000;
-        console.log(UNIXtime);
+        console.log(UNIXtime); // Going to be undefined first
         if (UNIXtime == undefined || UNIXtime >= (new Date('2021.03.30').getTime() / 1000 - TDays[TPeriod])) {
           return data.slice(-TDays[TPeriod]);  
         }
@@ -467,22 +467,22 @@
           return data.slice(0, TDays[TPeriod]);
         }
         else {
-          // let idx;
-          // for (let i = 1; i < data.length; i++) {
-          //   console.log(data[i].Timestamp.getTime() / 1000);
-          //   break;
-          //   // if (data[i].Timestamp.getTime() / 1000 > UNIXtime) {
-          //   //   console.log(new Date(data[i].Timestamp * 1000));
-          //   //   idx = i;
-          //   // }
-          // }
+          let idx;
+          for (let i = 1; i < data.length; i++) {
+            let currTime = data[i].Timestamp.getTime() / 1000;
+            if (currTime > UNIXtime) {
+              console.log(new Date(currTime * 1000));
+              idx = i;
+              break;
+            }
+          }
           
-          let firstTimeStamp = data[1].Timestamp.getTime() / 1000;
-          let lastTimeStamp = data[data.length - 1].Timestamp.getTime() / 1000;
-          // Off-error from 1st datapoint being invalid
-          let idx = Math.floor( (UNIXtime - 900000 - firstTimeStamp) / (lastTimeStamp - firstTimeStamp) * data.length );
-          console.log(new Date(firstTimeStamp * 1000));
-          console.log(new Date(lastTimeStamp * 1000));
+          // let firstTimeStamp = data[1].Timestamp.getTime() / 1000;
+          // let lastTimeStamp = data[data.length - 1].Timestamp.getTime() / 1000;
+          // // Off-error from 1st datapoint being invalid
+          // let idx = Math.floor( (UNIXtime - 900000 - firstTimeStamp) / (lastTimeStamp - firstTimeStamp) * data.length );
+          // console.log(new Date(firstTimeStamp * 1000));
+          // console.log(new Date(lastTimeStamp * 1000));
           console.log(idx);
           return data.slice(idx -TDays[TPeriod], idx);
 
