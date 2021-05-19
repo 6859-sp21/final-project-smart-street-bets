@@ -608,32 +608,6 @@
       }
 
       function dataCompress(data, interval) {
-        // var compressedData  = d3.nest()
-        //               .key(function(d) { return timeCompare(d.Timestamp, interval); })
-        //               .rollup(function(v) { return {
-        //                       Timestamp:   timeCompare(d3.values(v).pop().Timestamp, interval),
-        //                       Open:        d3.values(v).shift().Open,
-        //                       Low:         d3.min(v, function(d) { return d.Low;  }),
-        //                       High:        d3.max(v, function(d) { return d.High; }),
-        //                       Close:       d3.values(v).pop().Close,
-        //                       // TURNOVER:    d3.mean(v, function(d) { return d.TURNOVER; }),
-        //                       // VOLATILITY:  d3.mean(v, function(d) { return d.VOLATILITY; })
-        //                       }; })
-        //               .entries(data).map(function(d) { return d.values; });
-
-        // var compressedData  = d3.nest() // Key : Values; In this case, key is the interval, and values are points that are all within that interval
-        //               .key(function(d) { return timeCompare(d.Timestamp, interval); })
-        //               .rollup(function(v) { return {
-        //                       Timestamp:   timeCompare(d3.values(v).pop().Timestamp, interval), // Last item, pop
-        //                       Open:        d3.values(v).shift().Open, // First item
-        //                       Low:         d3.min(v, function(d) { return d.Low;  }),
-        //                       High:        d3.max(v, function(d) { return d.High; }),
-        //                       Close:       d3.values(v).pop().Close, // Last item is the close 
-        //                       // TURNOVER:    d3.mean(v, function(d) { return d.TURNOVER; }),
-        //                       // VOLATILITY:  d3.mean(v, function(d) { return d.VOLATILITY; })
-        //                       }; })
-        //               .entries(data).map(function(d) { return d.values; });
-
         // Only 1 interval being used (Because of 60 datapoint limit!!)
         // Keys will be dates in Unix
         // Day in UNIX -> Array pairs 
