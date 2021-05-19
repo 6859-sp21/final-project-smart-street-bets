@@ -467,9 +467,18 @@
           return data.slice(0, TDays[TPeriod]);
         }
         else {
+          // let idx;
+          // for (let i = 1; i < data.length; i++) {
+          //   console.log(data[i].Timestamp.getTime() / 1000);
+          //   break;
+          //   // if (data[i].Timestamp.getTime() / 1000 > UNIXtime) {
+          //   //   console.log(new Date(data[i].Timestamp * 1000));
+          //   //   idx = i;
+          //   // }
+          // }
+          
           let firstTimeStamp = data[1].Timestamp.getTime() / 1000;
           let lastTimeStamp = data[data.length - 1].Timestamp.getTime() / 1000;
-          
           // Off-error from 1st datapoint being invalid
           let idx = Math.floor( (UNIXtime - 900000 - firstTimeStamp) / (lastTimeStamp - firstTimeStamp) * data.length );
           console.log(new Date(firstTimeStamp * 1000));
