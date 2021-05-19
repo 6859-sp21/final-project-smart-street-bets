@@ -467,11 +467,13 @@
           return data.slice(0, TDays[TPeriod]);
         }
         else {
-          let firstTimeStamp = data[0].Timestamp.getTime() / 1000;
+          let firstTimeStamp = data[1].Timestamp.getTime() / 1000;
           let lastTimeStamp = data[data.length - 1].Timestamp.getTime() / 1000;
-
-          let idx = Math.floor( (UNIXtime - firstTimeStamp) / (lastTimeStamp - firstTimeStamp) * data.length );
-
+          
+          // Off-error from 1st datapoint being invalid
+          let idx = Math.floor( (UNIXtime - 900000 - firstTimeStamp) / (lastTimeStamp - firstTimeStamp) * data.length );
+          console.log(new Date(firstTimeStamp * 1000));
+          console.log(new Date(lastTimeStamp * 1000));
           console.log(idx);
           return data.slice(idx -TDays[TPeriod], idx);
 
@@ -483,6 +485,7 @@
       var toPress    = function() { genData = (TIntervals[TPeriod]!="minute")?dataCompress(toSlice(genRaw), TIntervals[TPeriod]):toSlice(genRaw); };
       
       function updateChart() {
+        // Global time is updated every minute
         toPress();
         displayAll();
       }
