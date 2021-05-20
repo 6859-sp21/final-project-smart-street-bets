@@ -44,6 +44,8 @@ Also, the chart will be updated once the user selects date and time. There are t
 
 ## Paper link
 
+<https://github.com/6859-sp21/final-project-smart-street-bets/blob/main/final/paper.pdf>
+
 ## Video link
 
 ## Instructions
