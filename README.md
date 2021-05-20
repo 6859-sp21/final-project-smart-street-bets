@@ -48,6 +48,8 @@ Also, the chart will be updated once the user selects date and time. There are t
 
 ## Video link
 
+<https://github.com/6859-sp21/final-project-smart-street-bets/blob/main/final_presentation.mp4?raw=true>
+
 ## Instructions
 
 * Select the date and time on the calendar. After that you will see the data on the graph, and articles about bitcoin on that day and the day before.
